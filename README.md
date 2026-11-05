@@ -134,11 +134,18 @@
 ```bash
 $ curl -X POST http://127.0.0.1:5000/submit \
   -H "Content-Type: application/json" \
-  -d '{"text": "...", "creator_id": "..."}'
+  -d '{"text": "Honestly, this gadget surprised me. Setup took two minutes, and for forty bucks it is a steal.", "creator_id": "me"}'
 ```
 
 ```json
-
+{
+  "confidence": 0.0,
+  "content_id": "a479e3e1-748f-4394-a80f-a58c0e2f387b",
+  "guess": "unsure",
+  "label": "PLACEHOLDER — label comes in Milestone 5.",
+  "model_score": 0.296,
+  "style_score": null
+}
 ```
 
 **An appeal**
@@ -160,7 +167,22 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 ```
 
 ```json
-
+{
+  "count": 1,
+  "entries": [
+    {
+      "combined_score": null,
+      "content_id": "a479e3e1-748f-4394-a80f-a58c0e2f387b",
+      "creator_id": "me",
+      "guess": "unsure",
+      "label": "PLACEHOLDER — label comes in Milestone 5.",
+      "model_score": 0.296,
+      "status": "decided",
+      "style_score": null,
+      "timestamp": "2026-11-05T08:54:13+00:00"
+    }
+  ]
+}
 ```
 
 ---
