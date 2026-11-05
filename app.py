@@ -203,13 +203,12 @@ def submit():
 
     # TODO: delete this and build the route.
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /submit isn't built yet — see the TODO in app.py.",
+        "message": payload.get("message"),
         "you_sent": {
             "text_length": len(payload.get("text", "")),
             "creator_id": payload.get("creator_id"),
         },
-    }), 501
+    }), 200
 
 
 @app.post("/appeal")

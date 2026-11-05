@@ -38,7 +38,12 @@
 
 <!-- The path a submission takes, from arriving to the label a reader sees.
      Six or seven steps — this is the trace you wrote in Milestone 1. -->
-
+- text comes in
+- go through a model signal detector 
+- go through a style signal detector
+- calculate the confidence
+- assign a label
+- send label to reader 
 
 
 ---
@@ -53,28 +58,33 @@
 
 ### Signal one — the model signal
 
-**What it measures:**
+**What it measures:** measure the perplexity if the text does use an AI to generate
 
-**Why that might differ between human and AI writing:**
+**Why that might differ between human and AI writing:** human has higher perplexity and ai has lower perplexity 
 
-**What it can't see:**
+**What it can't see:** people can have different writing style and word choice that might be of low perplexity too or similar to an AI model.  
 
 ### Signal two — the style signal
 
-**What it measures:**
+**What it measures:** the forming of sentences and writing structures
 
-**Why that might differ between human and AI writing:**
+**Why that might differ between human and AI writing:** human can have more fluctuated sentence structure and inconsistent while ai writing tend to be more consistent and have more balance sentence structures (like mostly mid-length sentences or a narrower band of vocabulary)
 
-**What it can't see:**
+**What it can't see:** it cannot read the meaning of the text. 
 
 ### The combining rule
 
-<!-- Write the rule in words, then give the numbers. What happens when the two
-     signals disagree? -->
+<!-- Write the rule in words, then give the numbers. What happens when the two signals disagree? -->
 
-**The rule:**
+**The rule:** First I check whether the two signals split, meaning they disagree by a lot. If they split, I return 0.5 so the text gets the "unsure" label, because when my two methods disagree I don't actually know. If they don't split, I return the average of the two signals, so the text is only called AI when both signals lean AI.
 
 **The numbers:**
+- Split: the difference between the two signals is more than 0.4
+- If split → return 0.5 (unsure)
+- If not split → return the average of the model signal and the style signal
+- Average of 0.6 or more → AI (`AI_THRESHOLD = 0.6`)
+- Average below 0.35 → human (`HUMAN_THRESHOLD = 0.35`)
+- Anything in between → unsure
 
 **Where it lives:** `scoring.py::combine_signals`
 
