@@ -38,12 +38,13 @@
 
 <!-- The path a submission takes, from arriving to the label a reader sees.
      Six or seven steps — this is the trace you wrote in Milestone 1. -->
-- text comes in
-- go through a model signal detector 
-- go through a style signal detector
-- calculate the confidence
-- assign a label
-- send label to reader 
+1. **Text comes in.** A writer sends `POST /submit` with their `text` and `creator_id`, and the service gives the submission a new `content_id`.
+2. **Model signal.** `detector.py::model_signal` runs a small language model over the text and measures how predictable it is (perplexity). Very predictable text scores closer to 1 (more AI-like).
+3. **Style signal.** `stylometry.py::style_signal` measures the shape of the text: how even the sentence lengths are, how much the vocabulary repeats, and the punctuation. It also gives a 0–1 score, where higher is more AI-like.
+4. **Combine the scores.** `scoring.py::combine_signals` checks whether the two signals split (differ by more than 0.4). A split returns 0.5. Otherwise it returns their average.
+5. **Assign a label.** `scoring.py::score_to_label` turns the combined score into one of three labels: human (0.35 or below), unsure (in between), or AI (0.6 or above).
+6. **Log the decision.** Every submission is written to `logs/audit.jsonl` with both signal scores, the combined score, the label and the status `decided`.
+7. **Send the label back.** The writer gets the label text plus all the scores. If they disagree, they can send `POST /appeal`, which changes the status to `under_review` in the log.
 
 
 ---
@@ -212,17 +213,17 @@ The last entry is the appeal for my submission above, with the new status `under
 
 ## How I Used AI
 
-**Moment 1**
+**Moment 1: guidance on my acceptance criteria**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked the AI to explain the "label coverage", "appeal path" and "score spread" areas in criteria.md, and to guide me with questions *without* writing the criteria for me. When I got lost on score spread, I asked it to explain again more simply.
+- *What came back:* Questions to think through for each area, like which texts to test, how many, which score to compare, and whether a plain-code part like the appeal path should be held to a stricter "every time" target than the model. It also used a small number-line example to show what a good and a bad score spread look like.
+- *What I changed:* I wrote my own criteria, then checked each one with the question "could someone check this without asking me what I mean?" Because of that I made them more specific: #2 now compares the averages of the final combined score, #4 uses 5 human and 5 AI texts with at most 1 unsure per group, and #5 says exactly what a logged appeal must contain. It also pointed out that my first false-positive criterion said "at least" when I meant "at most", and I fixed it.
 
-**Moment 2**
+**Moment 2: coding the logic through comments**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* I asked the AI to ask me questions first and then write the code for my decisions: `combine_signals` based on my split rule, and the three style measures plus `style_signal`, with comments explaining each choice.
+- *What came back:* Multiple-choice questions (count sentence length in words or characters, which direction means AI, what a one-sentence text should return, how to weight the three measures), then code with comments that explain each decision. It also tested the code on sample texts and showed me the scores.
+- *What I changed:* I made the actual decisions. My first split rule was to return 0 (confidently human), and I changed it to 0.5 after seeing that it would let anyone game the system by making the signals disagree. For punctuation I didn't pick one of the offered options. I gave my own rule, that few unusual marks *or* lots of em dashes both point to AI, and the code was written to match. I chose 50% weight for sentence spread because it's the best-known difference between AI and human writing.
 
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 

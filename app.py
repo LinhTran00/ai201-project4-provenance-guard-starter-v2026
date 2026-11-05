@@ -219,10 +219,8 @@ def submit():
         flush=True,
     )
 
-    # Placeholders until Milestone 5.
-    guess = "unsure"
-    confidence = 0.0
-    label = "PLACEHOLDER — label comes in Milestone 5."
+    guess, label = scoring.score_to_label(combined_score)
+    confidence = combined_score
 
     audit.log_decision(
         content_id=content_id,
