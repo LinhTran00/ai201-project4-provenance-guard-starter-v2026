@@ -231,13 +231,16 @@ The last entry is the appeal for my submission above, with the new status `under
 
 ## Rate Limiting
 
-**My limits:** ___ per minute, ___ per day
+**My limits:** 12 per minute, 240 per day
 
 **Why those numbers and not others:**
 <!-- Think about two people: a real writer submitting their own work a few
      times an hour, and a script sending a thousand variations to map your
      thresholds. Your numbers have to be liveable for the first and hostile to
      the second. -->
+**12 per minute:** a real writer could reasonably send up to 12 pieces in one minute (1 pieces per 12 seconds), for example short pieces, or the same piece re-submitted after small edits. So a short burst like that shouldn't be blocked.
+
+**180 per day:** keeping up 12 a minute all day is not something a person does; that's a script. To find a daily cap, I assumed a person sleeps at least 6 hours, which leaves 18 waking hours. Allowing a generous 10 pieces per waking hour gives 18 × 10 = 180 per day. A real writer will almost never reach that, but a script mapping my thresholds with thousands of variations hits it quickly.
 
 **What a caller counts as:** <!-- per address, or per creator_id? They fail
 differently — one script can look like a thousand callers, and one household
@@ -248,7 +251,33 @@ can look like one. -->
 <!-- python run_attacks.py --flood 15 -->
 
 ```
+15 submissions as 'flood_tester' against http://127.0.0.1:5000
+The first one is slow while the model loads.
 
+  [ 1/15] 200
+  [ 2/15] 200
+  [ 3/15] 200
+  [ 4/15] 200
+  [ 5/15] 200
+  [ 6/15] 200
+  [ 7/15] 200
+  [ 8/15] 200
+  [ 9/15] 200
+  [10/15] 200
+  [11/15] 200
+  [12/15] 200
+  [13/15] 429
+  [14/15] 429
+  [15/15] 429
+
+============================================================
+200 200 200 200 200 200 200 200 200 200 200 200 429 429 429
+============================================================
+
+3 of 15 were rate limited. Paste the run above into your README
+under **Rate Limiting**, and check GET /log recorded the rejections.
+
+Wrote results\flood_2026-11-05_1340.md
 ```
 
 ---
