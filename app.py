@@ -266,13 +266,32 @@ def appeal():
     wrong accusation and nothing at all.
     """
     payload = request.get_json(silent=True) or {}
+    content_id = payload.get("content_id")
+    reasoning = payload.get("reasoning", "")
 
-    # TODO: delete this and build the route.
+    if not content_id:
+        return jsonify({
+            "error": "missing_content_id",
+            "message": "Please include the content_id from your submission.",
+        }), 400
+
+    # Only a valid appeal (one whose content_id exists) gets logged — see
+    # criterion 5 in criteria.md.
+    entries = audit.entries_for(content_id)
+    if not entries:
+        return jsonify({
+            "error": "unknown_content_id",
+            "message": "We couldn't find a submission with that content_id.",
+        }), 404
+
+    creator_id = entries[0].get("creator_id", "unknown")
+    entry = audit.log_appeal(content_id, creator_id, reasoning)
+
     return jsonify({
-        "error": "not_implemented",
-        "message": "POST /appeal isn't built yet — see the TODO in app.py.",
-        "you_sent": payload,
-    }), 501
+        "content_id": content_id,
+        "status": entry["status"],
+        "message": "Thanks. Your appeal was received and this item is now under review.",
+    }), 200
 
 
 # ── Already works ─────────────────────────────────────────────────────────────

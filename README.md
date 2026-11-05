@@ -106,14 +106,18 @@
 
 | Label | Score range | The exact text a reader sees |
 |---|---|---|
-| high-confidence human |  |  |
-| unsure |  |  |
-| high-confidence AI |  |  |
+| high-confidence human | 0.00 – 0.35 | "This looks like it was written by a person." |
+| unsure | above 0.35, below 0.60 | "We can't tell if this was written by a person or AI. This is not an accusation." |
+| high-confidence AI | 0.60 – 1.00 | "This looks like it may have been written by AI. Our checks can be wrong. If you wrote it, you can appeal." |
+
+Whenever my two signals split (differ by more than 0.4), the score is set to 0.5, so a split always gets the "unsure" label.
 
 **Why I worded the "unsure" one this way:**
 <!-- It's the hardest of the three. It has to admit uncertainty without
      sounding like an accusation, because the person reading it may well have
      written every word themselves. -->
+
+The reader may have written every word themselves, so it says plainly that we don't know and that it is not an accusation.
 
 
 
@@ -153,11 +157,15 @@ $ curl -X POST http://127.0.0.1:5000/submit \
 ```bash
 $ curl -X POST http://127.0.0.1:5000/appeal \
   -H "Content-Type: application/json" \
-  -d '{"content_id": "...", "reasoning": "..."}'
+  -d '{"content_id": "a479e3e1-748f-4394-a80f-a58c0e2f387b", "reasoning": "I wrote this myself."}'
 ```
 
 ```json
-
+{
+  "content_id": "a479e3e1-748f-4394-a80f-a58c0e2f387b",
+  "message": "Thanks. Your appeal was received and this item is now under review.",
+  "status": "under_review"
+}
 ```
 
 **What the log shows afterwards**
@@ -168,22 +176,37 @@ $ curl "http://127.0.0.1:5000/log?limit=3"
 
 ```json
 {
-  "count": 1,
+  "count": 3,
   "entries": [
     {
-      "combined_score": null,
+      "content_id": "d910fcb5-4379-46fa-872e-a2b12cafccae",
+      "creator_id": "me",
+      "event": "appeal",
+      "reasoning": "I wrote this myself.",
+      "status": "under_review",
+      "timestamp": "2026-11-05T09:47:44+00:00"
+    },
+    {
+      "content_id": "d910fcb5-4379-46fa-872e-a2b12cafccae",
+      "creator_id": "me",
+      "event": "appeal",
+      "reasoning": "I wrote this myself.",
+      "status": "under_review",
+      "timestamp": "2026-11-05T09:50:58+00:00"
+    },
+    {
       "content_id": "a479e3e1-748f-4394-a80f-a58c0e2f387b",
       "creator_id": "me",
-      "guess": "unsure",
-      "label": "PLACEHOLDER — label comes in Milestone 5.",
-      "model_score": 0.296,
-      "status": "decided",
-      "style_score": null,
-      "timestamp": "2026-11-05T08:54:13+00:00"
+      "event": "appeal",
+      "reasoning": "I wrote this myself.",
+      "status": "under_review",
+      "timestamp": "2026-11-05T09:53:04+00:00"
     }
   ]
 }
 ```
+
+The last entry is the appeal for my submission above, with the new status `under_review`. The original decision for `a479e3e1-…` (`"status": "decided"`, 08:54:13) is still earlier in the log, unchanged, because the log is append-only. The first two entries are appeals from an earlier test of a different submission.
 
 ---
 

@@ -99,12 +99,19 @@ def score_to_label(score: float) -> tuple[str, str]:
     think if they got it on their own work. That question is the whole
     milestone.
     """
-    # TODO: replace this — thresholds are in config.py
+    # Thresholds are in config.py. A split always scores 0.5 (see
+    # combine_signals), which lands in the unsure band.
     if score >= config.AI_THRESHOLD:
-        return "ai", "PLACEHOLDER — write the high-confidence AI label."
+        return "ai", (
+            "This looks like it may have been written by AI. "
+            "Our checks can be wrong. If you wrote it, you can appeal."
+        )
     if score <= config.HUMAN_THRESHOLD:
-        return "human", "PLACEHOLDER — write the high-confidence human label."
-    return "unsure", "PLACEHOLDER — write the unsure label."
+        return "human", "This looks like it was written by a person."
+    return "unsure", (
+        "We can't tell if this was written by a person or AI. "
+        "This is not an accusation."
+    )
 
 
 def label_ranges() -> list[tuple[str, str]]:
