@@ -31,6 +31,8 @@ from flask import Flask, jsonify, request
 import audit
 import config
 import detector
+import scoring
+import stylometry
 
 app = Flask(__name__)
 
@@ -206,8 +208,18 @@ def submit():
 
     content_id = str(uuid.uuid4())
     model_score = detector.model_signal(text)
+    style_score = stylometry.style_signal(text)
+    combined_score = scoring.combine_signals(model_score, style_score)
 
-    # Placeholders until Milestones 4 and 5.
+    # Show the scores in the server terminal while testing. The audit log
+    # (logs/audit.jsonl) is still the record; this is only for watching.
+    print(
+        f"[submit] model={model_score}  style={style_score}  "
+        f"combined={combined_score}",
+        flush=True,
+    )
+
+    # Placeholders until Milestone 5.
     guess = "unsure"
     confidence = 0.0
     label = "PLACEHOLDER — label comes in Milestone 5."
@@ -217,6 +229,8 @@ def submit():
         creator_id=creator_id,
         guess=guess,
         model_score=model_score,
+        style_score=style_score,
+        combined_score=combined_score,
         label=label,
     )
 
@@ -226,7 +240,8 @@ def submit():
         "confidence": confidence,
         "label": label,
         "model_score": model_score,
-        "style_score": None,
+        "style_score": style_score,
+        "combined_score": combined_score,
     }), 200
 
 

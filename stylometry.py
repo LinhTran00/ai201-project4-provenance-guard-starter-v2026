@@ -33,6 +33,14 @@ anything together:
 import re
 import statistics
 
+# Scaling points for the measures below. These are starting guesses — check
+# them against your calibration texts and adjust.
+TTR_WINDOW = 50                # words per window for the moving-average TTR
+TTR_AI = 0.6                   # TTR at or below this reads fully AI-like
+TTR_HUMAN = 0.9                # TTR at or above this reads fully human-like
+UNUSUAL_PER_WORD_HUMAN = 0.03  # ; : ! ? ( ) per word at which text reads human
+DASHES_PER_SENTENCE_AI = 0.5   # em dashes per sentence at which text reads AI
+
 
 def sentences(text: str) -> list[str]:
     """Split into sentences. Rough and good enough — given to you."""
@@ -63,9 +71,18 @@ def sentence_length_spread(text: str) -> float:
     Watch the edge case: a one-sentence submission has no spread at all, and
     `stdev` raises on fewer than two values. Decide what that should return
     before the attack set decides for you.
+
+    My choices: length is counted in words, spread is stdev ÷ mean, and the
+    result is flipped onto 0–1 so that higher = more even = more AI-like.
+    Fewer than two sentences can't show a spread, so it returns 0.5 (neutral).
     """
-    # TODO: replace this
-    return 0.0
+    lengths = [len(words(s)) for s in sentences(text)]
+    lengths = [n for n in lengths if n > 0]
+    if len(lengths) < 2:
+        return 0.5
+
+    spread = statistics.stdev(lengths) / statistics.mean(lengths)
+    return round(1 - min(spread, 1.0), 4)
 
 
 def type_token_ratio(text: str) -> float:
@@ -79,9 +96,25 @@ def type_token_ratio(text: str) -> float:
     longer, because common words repeat. Two texts of different lengths aren't
     directly comparable on it, and if your test inputs vary a lot in length,
     that alone can look like a signal.
+
+    My choices: to keep long and short texts comparable, this averages the
+    ratio over every 50-word window (a "moving-average" TTR). Texts shorter
+    than one window use the plain ratio. No words at all returns 0.5
+    (neutral). This one is NOT flipped here — `style_signal` flips it.
     """
-    # TODO: replace this
-    return 0.0
+    w = words(text)
+    if not w:
+        return 0.5
+
+    window = TTR_WINDOW
+    if len(w) <= window:
+        return round(len(set(w)) / len(w), 4)
+
+    ratios = [
+        len(set(w[i:i + window])) / window
+        for i in range(len(w) - window + 1)
+    ]
+    return round(statistics.mean(ratios), 4)
 
 
 def punctuation_density(text: str) -> float:
@@ -93,9 +126,25 @@ def punctuation_density(text: str) -> float:
         semicolons, dashes — is a real choice. Semicolons and em dashes are
         more interesting than full stops, because they vary more between
         writers.
+
+    My choices: two things point to AI, and either one is enough.
+      - FEW unusual marks (; : ! ? ( )) per word. Human writing uses a messier
+        mix; generated prose sticks to commas and full stops.
+      - MANY em dashes per sentence. Chatbots overuse them.
+    Each is scaled to 0–1 and the higher (more AI-like) one is returned, so
+    higher = more AI-like. No words at all returns 0.5 (neutral).
     """
-    # TODO: replace this
-    return 0.0
+    n_words = len(words(text))
+    if n_words == 0:
+        return 0.5
+    n_sentences = max(len(sentences(text)), 1)
+
+    unusual = len(re.findall(r"[;:!?()]", text))
+    dashes = len(re.findall(r"—|–|--", text))
+
+    few_unusual = 1 - min((unusual / n_words) / UNUSUAL_PER_WORD_HUMAN, 1.0)
+    many_dashes = min((dashes / n_sentences) / DASHES_PER_SENTENCE_AI, 1.0)
+    return round(max(few_unusual, many_dashes), 4)
 
 
 # ── Combining them ───────────────────────────────────────────────────────────
@@ -121,9 +170,30 @@ def style_signal(text: str) -> float:
     clearly human, plain conventional human writing, lightly-edited AI — before
     you trust it. Plain and ordinary, not formal: formal prose reads as *human*
     to signal one, and it is plain writing that gets accused.
+
+    My choices:
+      1. Direction: sentence_length_spread and punctuation_density already
+         return higher = AI. type_token_ratio is higher = more varied = human,
+         so it gets flipped.
+      2. Scale: the other two are already 0–1. A moving-average TTR rarely
+         leaves TTR_AI–TTR_HUMAN, so that range is stretched onto 1–0.
+      3. Weights: spread counts most (50%), because even sentence length is
+         the best-known difference. Vocabulary and punctuation get 25% each.
     """
-    # TODO: replace this
-    return 0.5
+    # Nothing to measure. Return neutral before the TTR scaling below, which
+    # would otherwise turn type_token_ratio's neutral 0.5 into "fully AI".
+    if not words(text):
+        return 0.5
+
+    spread = sentence_length_spread(text)
+    punctuation = punctuation_density(text)
+
+    ttr = type_token_ratio(text)
+    vocabulary = (TTR_HUMAN - ttr) / (TTR_HUMAN - TTR_AI)
+    vocabulary = min(max(vocabulary, 0.0), 1.0)
+
+    score = 0.5 * spread + 0.25 * vocabulary + 0.25 * punctuation
+    return round(score, 4)
 
 
 if __name__ == "__main__":

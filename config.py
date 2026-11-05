@@ -57,6 +57,13 @@ DETECTOR_MAX_TOKENS = 400
 WEIGHT_MODEL_SIGNAL = 0.5
 WEIGHT_STYLE_SIGNAL = 0.5
 
+# My split rule: if the two signals differ by more than SPLIT_GAP, they
+# disagree too much to trust either one, so the combined score is SPLIT_SCORE.
+# SPLIT_SCORE must sit between HUMAN_THRESHOLD and AI_THRESHOLD so a split
+# always lands on "unsure".
+SPLIT_GAP = 0.4
+SPLIT_SCORE = 0.5
+
 
 # ─── Thresholds (Milestone 5) ────────────────────────────────────────────────
 # Where one label becomes another. Scores run 0.0 (confidently human) to 1.0
@@ -72,7 +79,7 @@ WEIGHT_STYLE_SIGNAL = 0.5
 # that decide who pays for it.
 
 HUMAN_THRESHOLD = 0.35
-AI_THRESHOLD = 0.65
+AI_THRESHOLD = 0.6
 
 # ⚠️ One thing that catches people out in Milestone 5. A weighted average can
 # only land between its two inputs — so while `style_signal` is still the stub

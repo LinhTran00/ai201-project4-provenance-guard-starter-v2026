@@ -52,10 +52,24 @@ def combine_signals(model_score: float, style_score: float) -> float:
     The weights in config.py are placeholders. Change them, or ignore them and
     write a different rule.
     """
-    # TODO: replace this
-    return (
+    # My rule: check for a split first, then average.
+    #
+    # A split means the two signals disagree by a lot (e.g. 0.9 vs 0.1). An
+    # average would hide that and could still produce a confident label, so a
+    # split always returns SPLIT_SCORE (0.5), which lands on "unsure". When my
+    # two methods disagree, I don't actually know — and "unsure" is safer for
+    # a real writer than a wrong accusation.
+    split = abs(model_score - style_score) > config.SPLIT_GAP
+    if split:
+        return config.SPLIT_SCORE
+
+    # No split: the signals roughly agree, so their average is a fair summary.
+    # With equal weights (0.5 each), the text only scores high enough for the
+    # AI label when both signals lean AI.
+    return round(
         config.WEIGHT_MODEL_SIGNAL * model_score
-        + config.WEIGHT_STYLE_SIGNAL * style_score
+        + config.WEIGHT_STYLE_SIGNAL * style_score,
+        4,
     )
 
 
