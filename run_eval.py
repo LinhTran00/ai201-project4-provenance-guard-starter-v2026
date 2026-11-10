@@ -66,6 +66,76 @@ def describe(body):
     return json.dumps(body)[:120]
 
 
+def parse_json(response):
+    """The response body as a dict, or {} — a 500 page is HTML, not JSON."""
+    try:
+        payload = response.json() if response.content else {}
+    except ValueError:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def appeal_entries(requests, args, content_id):
+    """Appeal entries for one content_id, read back from the service's /log."""
+    log = parse_json(requests.get(f"{args.url}/log", timeout=args.timeout))
+    return [e for e in log.get("entries", [])
+            if e.get("content_id") == content_id and e.get("event") == "appeal"]
+
+
+def run_appeals(requests, args, scenario, trial):
+    """
+    Criterion 5 by script: submit, appeal the content_id that came back, then
+    check /log for the appeal entry. Ends with one appeal for a content_id that
+    doesn't exist, which should be refused and leave nothing in the log.
+    """
+    import uuid
+
+    results = []
+    for i, text in enumerate(scenario["appeals"], 1):
+        body = {"text": text, "creator_id": f"eval_appeal_{i}"}
+        result = {"sent": describe(body)}
+        try:
+            submitted = requests.post(f"{args.url}/submit", json=body,
+                                      timeout=args.timeout)
+            content_id = parse_json(submitted).get("content_id")
+            result.update(submit_status=submitted.status_code, content_id=content_id)
+            if not content_id:
+                result["summary"] = "no content_id"
+                results.append(result)
+                continue
+
+            appealed = requests.post(
+                f"{args.url}/appeal", timeout=args.timeout,
+                json={"content_id": content_id,
+                      "reasoning": f"Eval trial {trial}: I wrote this myself."})
+            entries = appeal_entries(requests, args, content_id)
+            entry = entries[-1] if entries else None
+            logged = bool(entry) and entry.get("status") == "under_review"
+            result.update(appeal_status=appealed.status_code,
+                          appeal_response=parse_json(appealed),
+                          log_entry=entry,
+                          summary="logged" if logged else "NOT LOGGED")
+        except Exception as exc:  # noqa: BLE001
+            result.update(error=f"{type(exc).__name__}: {exc}", summary="error")
+        results.append(result)
+
+    fake_id = str(uuid.uuid4())
+    result = {"sent": f"appeal for a content_id that doesn't exist: {fake_id}"}
+    try:
+        appealed = requests.post(f"{args.url}/appeal", timeout=args.timeout,
+                                 json={"content_id": fake_id, "reasoning": "control"})
+        logged = bool(appeal_entries(requests, args, fake_id))
+        refused = 400 <= appealed.status_code < 500 and not logged
+        result.update(appeal_status=appealed.status_code,
+                      appeal_response=parse_json(appealed),
+                      logged=logged,
+                      summary="invalid refused" if refused else "INVALID ACCEPTED")
+    except Exception as exc:  # noqa: BLE001
+        result.update(error=f"{type(exc).__name__}: {exc}", summary="error")
+    results.append(result)
+    return results
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -112,13 +182,19 @@ def main():
 
         trials = []
         for trial in range(1, args.trials + 1):
+            if scenario.get("appeals"):
+                results = run_appeals(requests, args, scenario, trial)
+                trials.append(results)
+                print(f"  trial {trial}: {', '.join(r['summary'] for r in results)}")
+                continue
+
             results = []
             for i, body in enumerate(bodies_for(scenario), 1):
                 preview = describe(body)
                 try:
                     response = requests.post(f"{args.url}/submit", json=body,
                                              timeout=args.timeout)
-                    payload = response.json() if response.content else {}
+                    payload = parse_json(response)
                     results.append({
                         "status": response.status_code,
                         "guess": payload.get("guess"),
@@ -126,6 +202,9 @@ def main():
                         "model_score": payload.get("model_score"),
                         "style_score": payload.get("style_score"),
                         "label": payload.get("label"),
+                        # What a refused request said — criterion 3 needs this.
+                        "error": payload.get("error"),
+                        "message": payload.get("message"),
                         "sent": preview,
                     })
                 except Exception as exc:  # noqa: BLE001
@@ -133,7 +212,7 @@ def main():
                                     "sent": preview})
 
             trials.append(results)
-            guesses = [r.get("guess") or "—" for r in results]
+            guesses = [r.get("guess") or str(r.get("status") or "—") for r in results]
             print(f"  trial {trial}: {', '.join(guesses)}")
 
         rows.append({"scenario": scenario, "trials": trials})

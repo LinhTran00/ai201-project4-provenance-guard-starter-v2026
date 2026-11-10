@@ -443,17 +443,137 @@ whose work got caught by it: FP03 — a non-native English speaker writing caref
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+| 1. False positive | At most 1 of 10 of my own pieces labeled AI, in all 3 trials | 4 of 10 AI | 4 of 10 AI | 4 of 10 AI | **MISS** |
+| 2. Score spread | Average AI score at least 0.5 above average human score (5 + 5 texts), in all 3 trials | gap 0.14 (AI 0.719, human 0.580) | gap 0.14 | gap 0.14 | **MISS** |
+| 3. Missing or too-short text | Every request under 15 words (or with no text) is told the text is missing or too short | 0 of 6 refused (4 × 500, 2 scored as 200) | 0 of 6 | 0 of 6 | **MISS** |
+| 4. Label coverage | At most 1 of 5 human and at most 1 of 5 AI texts labeled unsure, in all 3 trials | 3 of 5 human unsure, 0 of 5 AI | 3 human, 0 AI | 3 human, 0 AI | **MISS** |
+| 5. Appeal path | Every valid appeal logged with its content_id, `event: "appeal"`, `status: "under_review"` | 3 of 3 logged; fake ID refused (404) | 3 of 3; 404 | 3 of 3; 404 | **MET** |
+
+All three trials returned identical scores to four decimals, so these results are
+stable, not one lucky or unlucky run. Full output: `results/run_2026-11-10_0124_before.md`.
+Criteria 2 and 4 read the same scenario (5 of my texts + 5 chatbot texts). Criterion 5
+is scripted in `run_eval.py::run_appeals`: submit, appeal the returned content_id,
+then check `/log` for the entry.
 
 **Real output from one trial**, pasted as text, naming the file and function
 that produced it:
 
-```json
+Criterion 1, trial 1 — produced by `run_eval.py::main`, calling `app.py::submit`
+for each of my ten pieces. Saved in `results/run_2026-11-10_0124_before.md`.
 
+```json
+[
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.4621,
+    "model_score": 0.4109,
+    "style_score": 0.5134,
+    "label": "We can't tell if this was written by a person or AI. This is not an accusation.",
+    "error": null,
+    "message": null,
+    "sent": "With the specific two pieces of Jordan\u2019s arts mentioned above, both po"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5928,
+    "model_score": 0.5912,
+    "style_score": 0.5945,
+    "label": "We can't tell if this was written by a person or AI. This is not an accusation.",
+    "error": null,
+    "message": null,
+    "sent": "A meaningful piece of work that everybody can find their own meaning a"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.6953,
+    "model_score": 0.8214,
+    "style_score": 0.5691,
+    "label": "This looks like it may have been written by AI. Our checks can be wrong. If you wrote it, you can appeal.",
+    "error": null,
+    "message": null,
+    "sent": "Having the option to live in America as a Vietnamese is quite precious"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5505,
+    "model_score": 0.4039,
+    "style_score": 0.6972,
+    "label": "We can't tell if this was written by a person or AI. This is not an accusation.",
+    "error": null,
+    "message": null,
+    "sent": "As my mom\u2019s car stopped at the red light crossing the plaza, I already"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.6081,
+    "model_score": 0.5428,
+    "style_score": 0.6735,
+    "label": "This looks like it may have been written by AI. Our checks can be wrong. If you wrote it, you can appeal.",
+    "error": null,
+    "message": null,
+    "sent": "In the front of the supermarket, it was a line of 8 cashiers. It was k"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5801,
+    "model_score": 0.5871,
+    "style_score": 0.5732,
+    "label": "We can't tell if this was written by a person or AI. This is not an accusation.",
+    "error": null,
+    "message": null,
+    "sent": "In the end, our cart was as full as the first lady that I saw when com"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.5892,
+    "model_score": 0.4586,
+    "style_score": 0.7197,
+    "label": "We can't tell if this was written by a person or AI. This is not an accusation.",
+    "error": null,
+    "message": null,
+    "sent": "This order of writing does not only help me to write more smoothly, bu"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.6652,
+    "model_score": 0.7404,
+    "style_score": 0.59,
+    "label": "This looks like it may have been written by AI. Our checks can be wrong. If you wrote it, you can appeal.",
+    "error": null,
+    "message": null,
+    "sent": "On a summer day in Denton, Texas, I was about to hang out and have din"
+  },
+  {
+    "status": 200,
+    "guess": "ai",
+    "confidence": 0.6883,
+    "model_score": 0.7613,
+    "style_score": 0.6153,
+    "label": "This looks like it may have been written by AI. Our checks can be wrong. If you wrote it, you can appeal.",
+    "error": null,
+    "message": null,
+    "sent": "My name is Linh Tran. I am living in Texas and a student at the Univer"
+  },
+  {
+    "status": 200,
+    "guess": "unsure",
+    "confidence": 0.506,
+    "model_score": 0.3573,
+    "style_score": 0.6548,
+    "label": "We can't tell if this was written by a person or AI. This is not an accusation.",
+    "error": null,
+    "message": null,
+    "sent": "The reason why I writing this letter to you is that I saw your bill, H"
+  }
+]
 ```
 
 **Diagnoses**
