@@ -294,11 +294,144 @@ Wrote results\flood_2026-11-05_1340.md
 <!-- Choose entries that show the interesting failures, not the ten easiest. -->
 
 ```json
-
+[
+  {
+    "id": "FP02",
+    "status": 200,
+    "content_id": "0b7d091a-149c-4bed-9158-aa19a73def08",
+    "creator_id": "attacker_FP02",
+    "guess": "ai",
+    "confidence": 0.7386,
+    "model_score": 0.7387,
+    "style_score": 0.7385,
+    "label": "This looks like it may have been written by AI. Our checks can be wrong. If you wrote it, you can appeal.",
+    "error": null,
+    "verdict": "BROKE"
+  },
+  {
+    "id": "EV01",
+    "status": 200,
+    "content_id": "65a11ec0-55c8-4607-9e1a-157cedbb396d",
+    "creator_id": "attacker_EV01",
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.1635,
+    "style_score": 0.6697,
+    "label": "We can't tell if this was written by a person or AI. This is not an accusation.",
+    "error": null,
+    "verdict": "BROKE"
+  },
+  {
+    "id": "EV08",
+    "status": 200,
+    "content_id": "2e28e994-c539-4f12-a6c0-8d25be47a68e",
+    "creator_id": "attacker_EV08",
+    "guess": "unsure",
+    "confidence": 0.4269,
+    "model_score": 0.2452,
+    "style_score": 0.6086,
+    "label": "We can't tell if this was written by a person or AI. This is not an accusation.",
+    "error": null,
+    "verdict": "BROKE"
+  },
+  {
+    "id": "FP03",
+    "status": 200,
+    "content_id": "f8e9f282-0877-4c82-a0fe-4093f5a3fa8d",
+    "creator_id": "attacker_FP03",
+    "guess": "ai",
+    "confidence": 0.7291,
+    "model_score": 0.8051,
+    "style_score": 0.6531,
+    "label": "This looks like it may have been written by AI. Our checks can be wrong. If you wrote it, you can appeal.",
+    "error": null,
+    "verdict": "BROKE"
+  },
+  {
+    "id": "FP07",
+    "status": 200,
+    "content_id": "c11dcb69-675b-4b05-b3a9-8256069f3e35",
+    "creator_id": "attacker_FP07",
+    "guess": "ai",
+    "confidence": 0.7581,
+    "model_score": 0.8816,
+    "style_score": 0.6345,
+    "label": "This looks like it may have been written by AI. Our checks can be wrong. If you wrote it, you can appeal.",
+    "error": null,
+    "verdict": "BROKE"
+  },
+  {
+    "id": "PI02",
+    "status": 200,
+    "content_id": "88edac59-03ec-48d9-9208-4541cabdc9ee",
+    "creator_id": "attacker_PI02",
+    "guess": "human",
+    "confidence": 0.2217,
+    "model_score": 0.2044,
+    "style_score": 0.2389,
+    "label": "This looks like it was written by a person.",
+    "error": null,
+    "verdict": "BROKE"
+  },
+  {
+    "id": "PI04",
+    "status": 200,
+    "content_id": "97f353c8-5a25-4f7c-8aab-f6a5b237fb17",
+    "creator_id": "attacker_PI04",
+    "guess": "unsure",
+    "confidence": 0.4174,
+    "model_score": 0.4998,
+    "style_score": 0.335,
+    "label": "We can't tell if this was written by a person or AI. This is not an accusation.",
+    "error": null,
+    "verdict": "HELD"
+  },
+  {
+    "id": "MF08",
+    "status": 200,
+    "content_id": "2fd34714-7e32-4846-a03b-300d9e8fcf95",
+    "creator_id": "attacker_MF08",
+    "guess": "ai",
+    "confidence": 0.8102,
+    "model_score": 0.9876,
+    "style_score": 0.6327,
+    "label": "This looks like it may have been written by AI. Our checks can be wrong. If you wrote it, you can appeal.",
+    "error": null,
+    "verdict": "BROKE"
+  },
+  {
+    "id": "RQ06",
+    "status": 200,
+    "content_id": "629a2cfe-7df8-402c-a71d-6c0787386cdf",
+    "creator_id": {
+      "id": "x"
+    },
+    "guess": "unsure",
+    "confidence": 0.5,
+    "model_score": 0.0492,
+    "style_score": 0.5,
+    "label": "We can't tell if this was written by a person or AI. This is not an accusation.",
+    "error": null,
+    "verdict": "BROKE"
+  },
+  {
+    "id": "MF02",
+    "status": 500,
+    "content_id": null,
+    "creator_id": "attacker_MF02",
+    "guess": null,
+    "confidence": null,
+    "model_score": null,
+    "style_score": null,
+    "label": null,
+    "error": "response wasn't JSON: <!doctype html>\n<html lang=en>\n  <head>\n    <title>ValueError: Text is too short to score — a few sentences at least.\n // Werkzeug Debugger</title>\n    <link rel=\"stylesheet\" href=\"?__debugger__=yes&a",
+    "verdict": "BROKE"
+  }
+]
 ```
 
 **The single worst outcome** — the one I'd least want to explain to a writer
-whose work got caught by it:
+whose work got caught by it: FP03 — a non-native English speaker writing carefully, labeled ai (0.729). This is the one I'd least want to explain. The writer did what we tell people learning a language to do: short, clear sentences and safe word choices. My detector treats that as machine-like. Both signals scored it high, so it passed the AI threshold with no split to send it to "unsure." The person most likely to be doubted already got doubted by my service, and an appeal means defending their own writing in their second language.
 
 
 
