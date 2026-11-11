@@ -287,7 +287,69 @@ Wrote results\flood_2026-11-05_1340.md
 <!-- Every attack with its outcome and a held-or-broke mark.
      `run_attacks.py --label before` produces the table. -->
 
+Full output: `results/attack_run_2026-11-05_1352_before.md`, produced by
+`run_attacks.py::main` against `app.py::submit`.
 
+| ID | Family | Targeting | Result | Verdict |
+|---|---|---|---|---|
+| EV01 | `evasion` | signal two: typos raise word variety | 200 · unsure 0.500 | BROKE |
+| EV02 | `evasion` | signal two: broken-up sentences raise length spread | 200 · unsure 0.462 | BROKE |
+| EV03 | `evasion` | signal two: a pasted quotation changes the shape | 200 · unsure 0.519 | BROKE |
+| EV04 | `evasion` | signal one: unusual words raise perplexity | 200 · ai 0.637 | HELD |
+| EV05 | `evasion` | both signals: heavy human editing pass | 200 · unsure 0.384 | BROKE |
+| EV06 | `evasion` | signal two: one very long sentence and one very short | 200 · unsure 0.433 | BROKE |
+| EV07 | `evasion` | signal two: padding with punctuation | 200 · unsure 0.566 | BROKE |
+| EV08 | `evasion` | signal one: text below the token window | 200 · unsure 0.427 | BROKE |
+| EV09 | `evasion` | both: AI text with a human opening paragraph bolted on | 200 · ai 0.610 | HELD |
+| EV10 | `evasion` | signal two: repeated stanza structure | 200 · ai 0.891 | HELD |
+| FP01 | `false_positive` | plain, clear human writing with no flourishes | 200 · ai 0.608 | BROKE |
+| FP02 | `false_positive` | human writing in a formal register | 200 · ai 0.739 | BROKE |
+| FP03 | `false_positive` | a non-native English speaker writing carefully | 200 · ai 0.729 | BROKE |
+| FP04 | `false_positive` | a student essay written to a rubric | 200 · ai 0.733 | BROKE |
+| FP05 | `false_positive` | technical documentation written by a person | 200 · ai 0.820 | BROKE |
+| FP06 | `false_positive` | a person imitating a formal template | 200 · ai 0.746 | BROKE |
+| FP07 | `false_positive` | human writing that repeats a phrase deliberately | 200 · ai 0.758 | BROKE |
+| FP08 | `false_positive` | very short genuine human submission | 200 · unsure 0.428 | HELD |
+| PI01 | `prompt_injection` | instruction to ignore the check | 200 · unsure 0.441 | BROKE |
+| PI02 | `prompt_injection` | instruction disguised as a system message | 200 · human 0.222 | BROKE |
+| PI03 | `prompt_injection` | instruction wrapped in the writer's voice | 200 · unsure 0.461 | BROKE |
+| PI04 | `prompt_injection` | attempt to make the label text hostile | 200 · unsure 0.417 | HELD |
+| PI05 | `prompt_injection` | attempt to inject into the audit log | 200 · unsure 0.452 | BROKE |
+| PI06 | `prompt_injection` | instruction plus real human text | 200 · unsure 0.579 | HELD |
+| MF01 | `malformed` | text is only whitespace | 200 · unsure 0.353 | BROKE |
+| MF02 | `malformed` | text is a single character | 500 crash | BROKE |
+| MF03 | `malformed` | text is control characters | 200 · unsure 0.500 | HELD |
+| MF04 | `malformed` | text is only punctuation | 200 · unsure 0.500 | HELD |
+| MF05 | `malformed` | text is a very long single word | 200 · unsure 0.500 | HELD |
+| MF06 | `malformed` | text is emoji only | 200 · unsure 0.500 | HELD |
+| MF07 | `malformed` | text is right-to-left script | 200 · unsure 0.500 | HELD |
+| MF08 | `malformed` | text is 60,000 characters | 200 · ai 0.810 | BROKE |
+| RQ01 | `malformed` | no text field at all | 500 crash | BROKE |
+| RQ02 | `malformed` | no creator_id | 200 · unsure 0.370 | BROKE |
+| RQ03 | `malformed` | text is a number | 500 crash | BROKE |
+| RQ04 | `malformed` | text is a list | 500 crash | BROKE |
+| RQ05 | `malformed` | text is null | 500 crash | BROKE |
+| RQ06 | `malformed` | creator_id is an object | 200 · unsure 0.500 | BROKE |
+| RQ07 | `malformed` | body is a JSON array, not an object | 500 crash | BROKE |
+| RQ08 | `malformed` | body is unparseable JSON | 500 crash | BROKE |
+| RQ09 | `malformed` | body is empty | 500 crash | BROKE |
+| RQ10 | `malformed` | body is form-encoded, not JSON | 500 crash | BROKE |
+| RQ11 | `malformed` | body is JSON claiming to be plain text | 500 crash | BROKE |
+| RQ12 | `malformed` | deeply nested JSON | 500 crash | BROKE |
+| FL01_01 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_02 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_03 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_04 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_05 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_06 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_07 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_08 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_09 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_10 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_11 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+| FL01_12 | `flood_same_creator` | 20 rapid submissions from one creator | 200 · unsure 0.500 | HELD |
+
+**33 of 56 BROKE.**
 
 **Ten audit log entries from the run**
 
@@ -683,20 +745,149 @@ RQ05), not the other ten.
 
 ## The Improvement
 
-**What I changed:**
+**What I changed:** I added input validation. `app.py::validate_submission`
+now runs at the top of `app.py::submit`, before either signal sees the text.
+It refuses the request with a clear message, and writes a `rejected` entry to
+the audit log, when:
 
-**Which diagnosis pointed at it:**
+| Problem | Response |
+|---|---|
+| The body isn't a JSON object (array, broken JSON, empty, form data, plain text, too deeply nested) | 400 `invalid_body` |
+| `text` is missing or `null` | 400 `missing_text` |
+| `text` isn't a string (number, list) | 400 `invalid_text` |
+| `text` is over 20,000 characters | 413 `text_too_long` |
+| `text` has fewer than 15 words (counted by spaces, so whitespace counts as 0) | 400 `text_too_short` |
+| `creator_id` is missing, empty or not a string | 400 `missing_creator_id` |
+
+The two limits live in `config.py` as `MIN_WORDS = 15` (from criterion 3) and
+`MAX_TEXT_CHARS = 20_000` (about 3,500 words, far past any normal piece; the
+model only reads the first ~300 words anyway). Nothing about scoring changed:
+same signals, same weights, same thresholds.
+
+**Which diagnosis pointed at it:** Diagnosis 2, bad input is never checked.
+It found that the only input check in the service was inside signal one,
+where it crashed instead of answering and counted tokens so whitespace got
+through. The fix moves the check to the stage where it belongs: the route.
+
+I picked this over a scoring change because it was the one option with no
+trade. Before choosing, I re-ran my recorded scores through each option.
+Raising the AI threshold to 0.70 would have cleared criterion 1, but made
+evasion worse (7 → 9 broken) and caught only 3 of 5 chatbot texts. A
+style signal made only of sentence spread cut false positives (7 → 4) but
+made criterion 1 worse (4 → 5 of 10). Validation only affects inputs that
+shouldn't be scored at all.
 
 ### Attack Run — After
 
 <!-- Same format. `run_attacks.py --label after` -->
 
+Full output: `results/attack_run_2026-11-11_0043_after.md`, produced by
+`run_attacks.py::main` against `app.py::submit`. Same 56 attacks, same verdict
+rules as the before run.
 
+| Family | Attacks | BROKE before | BROKE after |
+|---|---|---|---|
+| `evasion` | 10 | 7 | 6 |
+| `false_positive` | 8 | 7 | 7 |
+| `prompt_injection` | 6 | 4 | 4 |
+| `malformed` | 20 | 15 | 0 |
+| `flood_same_creator` | 12 | 0 | 0 |
+| **Total** | **56** | **33** | **17** |
+
+**Every attack, side by side** (bold = the result changed):
+
+| ID | Family | Before | After | Verdict before → after |
+|---|---|---|---|---|
+| EV01 | `evasion` | 200 · unsure 0.500 | 200 · unsure 0.500 | BROKE → BROKE |
+| EV02 | `evasion` | 200 · unsure 0.462 | 200 · unsure 0.462 | BROKE → BROKE |
+| EV03 | `evasion` | 200 · unsure 0.519 | 200 · unsure 0.519 | BROKE → BROKE |
+| EV04 | `evasion` | 200 · ai 0.637 | 200 · ai 0.637 | HELD → HELD |
+| EV05 | `evasion` | 200 · unsure 0.384 | 200 · unsure 0.384 | BROKE → BROKE |
+| EV06 | `evasion` | 200 · unsure 0.433 | 200 · unsure 0.433 | BROKE → BROKE |
+| EV07 | `evasion` | 200 · unsure 0.566 | 200 · unsure 0.566 | BROKE → BROKE |
+| **EV08** | `evasion` | 200 · unsure 0.427 | 400 refused | **BROKE → HELD** |
+| EV09 | `evasion` | 200 · ai 0.610 | 200 · ai 0.610 | HELD → HELD |
+| EV10 | `evasion` | 200 · ai 0.891 | 200 · ai 0.891 | HELD → HELD |
+| FP01 | `false_positive` | 200 · ai 0.608 | 200 · ai 0.608 | BROKE → BROKE |
+| FP02 | `false_positive` | 200 · ai 0.739 | 200 · ai 0.739 | BROKE → BROKE |
+| FP03 | `false_positive` | 200 · ai 0.729 | 200 · ai 0.729 | BROKE → BROKE |
+| FP04 | `false_positive` | 200 · ai 0.733 | 200 · ai 0.733 | BROKE → BROKE |
+| FP05 | `false_positive` | 200 · ai 0.820 | 200 · ai 0.820 | BROKE → BROKE |
+| FP06 | `false_positive` | 200 · ai 0.746 | 200 · ai 0.746 | BROKE → BROKE |
+| FP07 | `false_positive` | 200 · ai 0.758 | 200 · ai 0.758 | BROKE → BROKE |
+| **FP08** | `false_positive` | 200 · unsure 0.428 | 400 refused | HELD → HELD |
+| PI01 | `prompt_injection` | 200 · unsure 0.441 | 200 · unsure 0.441 | BROKE → BROKE |
+| PI02 | `prompt_injection` | 200 · human 0.222 | 200 · human 0.222 | BROKE → BROKE |
+| PI03 | `prompt_injection` | 200 · unsure 0.461 | 200 · unsure 0.461 | BROKE → BROKE |
+| PI04 | `prompt_injection` | 200 · unsure 0.417 | 200 · unsure 0.417 | HELD → HELD |
+| PI05 | `prompt_injection` | 200 · unsure 0.452 | 200 · unsure 0.452 | BROKE → BROKE |
+| PI06 | `prompt_injection` | 200 · unsure 0.579 | 200 · unsure 0.579 | HELD → HELD |
+| **MF01** | `malformed` | 200 · unsure 0.353 | 400 refused | **BROKE → HELD** |
+| **MF02** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **MF03** | `malformed` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **MF04** | `malformed` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **MF05** | `malformed` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **MF06** | `malformed` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| MF07 | `malformed` | 200 · unsure 0.500 | 200 · unsure 0.500 | HELD → HELD |
+| **MF08** | `malformed` | 200 · ai 0.810 | 413 refused | **BROKE → HELD** |
+| **RQ01** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **RQ02** | `malformed` | 200 · unsure 0.370 | 400 refused | **BROKE → HELD** |
+| **RQ03** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **RQ04** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **RQ05** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **RQ06** | `malformed` | 200 · unsure 0.500 | 400 refused | **BROKE → HELD** |
+| **RQ07** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **RQ08** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **RQ09** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **RQ10** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **RQ11** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **RQ12** | `malformed` | 500 crash | 400 refused | **BROKE → HELD** |
+| **FL01_01** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_02** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_03** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_04** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_05** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_06** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_07** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_08** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_09** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_10** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_11** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+| **FL01_12** | `flood_same_creator` | 200 · unsure 0.500 | 400 refused | HELD → HELD |
+
+### Run Log — After
+
+Full output: `results/run_2026-11-11_0043_after.md`, produced by
+`run_eval.py::main`. Same scenarios, three trials each.
+
+| Criterion | Target | Before (runs 1–3) | After run 1 | After run 2 | After run 3 | Verdict before → after |
+|---|---|---|---|---|---|---|
+| 1. False positive | At most 1 of 10 of my own pieces labeled AI | 4 of 10 AI ×3 | 4 of 10 AI | 4 of 10 AI | 4 of 10 AI | MISSED → MISSED |
+| 2. Score spread | AI average at least 0.5 above human average | gap 0.14 ×3 | gap 0.14 | gap 0.14 | gap 0.14 | MISSED → MISSED |
+| 3. Missing or too-short text | Every request under 15 words or with no text told it's missing or too short | 0 of 6 ×3 | 6 of 6; 15-word control accepted | 6 of 6; control accepted | 6 of 6; control accepted | **MISSED → MET** |
+| 4. Label coverage | At most 1 of 5 human and 1 of 5 AI unsure | 3 human, 0 AI ×3 | 3 human, 0 AI | 3 human, 0 AI | 3 human, 0 AI | MISSED → MISSED |
+| 5. Appeal path | Every valid appeal logged with content_id, `appeal`, `under_review` | 3 of 3 ×3 | 3 of 3; fake ID 404 | 3 of 3; 404 | 3 of 3; 404 | MET → MET |
+
+Criterion 3, after, trial 1 (from `results/run_2026-11-11_0043_after.md`,
+trimmed to the fields that matter; the empty score fields are left out):
+
+```json
+[
+  {"status": 400, "error": "missing_text",   "message": "Your submission has no text. Paste the writing you want checked.", "sent": "{\"creator_id\": \"eval_bad_missing\"}"},
+  {"status": 400, "error": "text_too_short", "message": "Your text is too short to check. Please send at least 15 words.", "sent": "(empty text)"},
+  {"status": 400, "error": "text_too_short", "message": "Your text is too short to check. Please send at least 15 words.", "sent": "   \n\t  "},
+  {"status": 400, "error": "missing_text",   "message": "Your submission has no text. Paste the writing you want checked.", "sent": "{\"text\": null, \"creator_id\": \"eval_bad_null\"}"},
+  {"status": 400, "error": "text_too_short", "message": "Your text is too short to check. Please send at least 15 words.", "sent": "Hello."},
+  {"status": 400, "error": "text_too_short", "message": "Your text is too short to check. Please send at least 15 words.", "sent": "I wrote this short note to test whether the service rejects text this short."},
+  {"status": 200, "guess": "unsure", "sent": "I wrote this short note to test whether the service rejects text this short today."}
+]
+```
 
 **Did it help, and how do I know:**
 
-<!-- Widening the unsure band usually fixes one problem and creates another.
-     Reporting that trade honestly is worth full credit. -->
+It helped with bad input but not with scoring: broken attacks fell from 33 to
+17 and criterion 3 went from MISSED to MET, while criteria 1, 2 and 4 and the
+false positives didn't change.
 
 
 
@@ -707,12 +898,46 @@ RQ05), not the other ten.
 <!-- For each attack still getting through and each criterion still missed:
      what you'd do, and why you stopped. -->
 
+**Criteria 1, 2, 4 and FP01–FP07: human writing still scores as AI.**
+This is Diagnosis 1, and my improvement didn't touch it. Next I'd rebuild
+signal two. The punctuation part scores 1.0 on every text, and the
+vocabulary part reads chatbot text as *more* varied than mine, so both need
+replacing, not reweighting. Then I'd move the AI threshold up. Re-running my
+recorded scores showed no single scoring change fixes this without a cost:
+threshold 0.70 clears criterion 1 but catches only 3 of 5 chatbot texts, and
+a spread-only style signal cuts false positives to 4 but makes criterion 1
+worse. I stopped because the assignment allows one change, and the
+validation fix was the one with no trade.
+
+**EV01, EV02, EV03, EV05, EV06, EV07, PI01, PI02, PI03, PI05: AI text still
+lands in unsure (PI02 in human).** Typos, broken-up sentences, a pasted quote
+or an injected instruction pull one signal down. The average then drops below
+0.60, or the signals differ by more than 0.4 and the split rule sets the score
+to exactly 0.5 (EV01). To catch these I'd have to make the scoring more
+willing to say "ai", which works against fixing Diagnosis 1. Given the trade
+below, I'd accept most of these as unsure rather than accuse more real writers.
+
+**Things my change created or didn't cover:**
+
+- Short human pieces (under 15 words, like FP08) can no longer be checked.
+- Rate limits are counted per `creator_id`, so one script can use a new name
+  for each request and never be limited. Not tested by the attack set.
+- `config.py` has `RATE_LIMIT_PER_DAY = 13680`, but my Rate Limiting section
+  says 240 (and 180 in the explanation). At 13,680 the daily cap never stops
+  a script that sends 12 a minute. The config needs to match what I reasoned out.
+
 
 
 **The trade I'd make if this ran for real:**
 
 <!-- Two sentences. Fewer wrong accusations means more AI text getting through.
      Say which way you'd go and WHO PAYS FOR IT. -->
+
+I'd go for fewer wrong accusations: raise the AI threshold and let more text
+land in "unsure", because a false AI label lands on one real person (often a
+careful, formal or non-native writer like FP03), while a missed AI text costs
+the site a little. The people who pay are readers and honest writers, who
+will see more AI-written work go by with only an "unsure" label next to it.
 
 
 

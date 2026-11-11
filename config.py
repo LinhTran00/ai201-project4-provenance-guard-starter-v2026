@@ -92,6 +92,18 @@ AI_THRESHOLD = 0.6
 # prints the bands; the reachable range is a different question.
 
 
+# ─── Input checks (UNIT 8 improvement) ───────────────────────────────────────
+# `app.py::validate_submission` refuses a request before either signal runs.
+#
+# MIN_WORDS matches criterion 3: under 15 words is too short to judge.
+# MAX_TEXT_CHARS is about 3,500 words — far past any normal piece, and the
+# model only reads the first ~300 words anyway. Anything longer is refused
+# rather than scored (attack MF08 was 57,640 characters).
+
+MIN_WORDS = 15
+MAX_TEXT_CHARS = 20_000
+
+
 # ─── Rate limiting (UNIT 8) ──────────────────────────────────────────────────
 # Off in unit 7. You turn it on and choose the numbers in unit 8, Milestone 1.
 #

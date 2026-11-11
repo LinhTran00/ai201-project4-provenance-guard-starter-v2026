@@ -153,6 +153,57 @@ def health():
 
 # ── YOU BUILD THIS ────────────────────────────────────────────────────────────
 
+def validate_submission():
+    """
+    Check a /submit request before either signal sees it.  ← unit 8 improvement
+
+    Returns (payload, None) when the request is fine, or
+    (None, (status, error, message, creator_for_log)) when it isn't.
+
+    Before this existed, the only check in the service was signal one raising
+    on fewer than 3 tokens — deep in the pipeline, as a 500, and counting
+    tokens so whitespace slipped past. See Diagnosis 2 in the README.
+    """
+    try:
+        payload = request.get_json(silent=True)
+    except Exception:  # noqa: BLE001 — e.g. JSON nested too deep to parse
+        payload = None
+
+    if not isinstance(payload, dict):
+        return None, (400, "invalid_body",
+                      "Send a JSON object like {\"text\": \"...\", \"creator_id\": \"...\"}.",
+                      "unknown")
+
+    creator_id = payload.get("creator_id")
+    creator_ok = isinstance(creator_id, str) and creator_id.strip()
+    creator_for_log = creator_id.strip() if creator_ok else "unknown"
+
+    text = payload.get("text")
+    if text is None:
+        return None, (400, "missing_text",
+                      "Your submission has no text. Paste the writing you want checked.",
+                      creator_for_log)
+    if not isinstance(text, str):
+        return None, (400, "invalid_text",
+                      "The text must be written words, not a number or a list.",
+                      creator_for_log)
+    if len(text) > config.MAX_TEXT_CHARS:
+        return None, (413, "text_too_long",
+                      f"Your text is too long to check. Please send at most "
+                      f"{config.MAX_TEXT_CHARS:,} characters.",
+                      creator_for_log)
+    if len(text.split()) < config.MIN_WORDS:
+        return None, (400, "text_too_short",
+                      f"Your text is too short to check. Please send at least "
+                      f"{config.MIN_WORDS} words.",
+                      creator_for_log)
+    if not creator_ok:
+        return None, (400, "missing_creator_id",
+                      "Include a creator_id so you can appeal this result later.",
+                      "unknown")
+    return payload, None
+
+
 @app.post("/submit")
 @limiter.limit(f"{config.RATE_LIMIT_PER_MINUTE}/minute;{config.RATE_LIMIT_PER_DAY}/day")
 def submit():
@@ -202,9 +253,14 @@ def submit():
     what should this do when `text` is missing, empty, or enormous? A crash on
     a malformed input is one of the most common real failures there is.
     """
-    payload = request.get_json(silent=True) or {}
-    text = payload.get("text", "")
-    creator_id = payload.get("creator_id", "unknown")
+    payload, problem = validate_submission()
+    if problem:
+        status, error, message, creator_for_log = problem
+        audit.log_rejection(creator_id=creator_for_log, reason=error)
+        return jsonify({"error": error, "message": message}), status
+
+    text = payload["text"]
+    creator_id = payload["creator_id"].strip()
 
     content_id = str(uuid.uuid4())
     model_score = detector.model_signal(text)
