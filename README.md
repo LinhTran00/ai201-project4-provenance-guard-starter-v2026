@@ -443,10 +443,10 @@ whose work got caught by it: FP03 — a non-native English speaker writing caref
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. False positive | At most 1 of 10 of my own pieces labeled AI, in all 3 trials | 4 of 10 AI | 4 of 10 AI | 4 of 10 AI | **MISS** |
-| 2. Score spread | Average AI score at least 0.5 above average human score (5 + 5 texts), in all 3 trials | gap 0.14 (AI 0.719, human 0.580) | gap 0.14 | gap 0.14 | **MISS** |
-| 3. Missing or too-short text | Every request under 15 words (or with no text) is told the text is missing or too short | 0 of 6 refused (4 × 500, 2 scored as 200) | 0 of 6 | 0 of 6 | **MISS** |
-| 4. Label coverage | At most 1 of 5 human and at most 1 of 5 AI texts labeled unsure, in all 3 trials | 3 of 5 human unsure, 0 of 5 AI | 3 human, 0 AI | 3 human, 0 AI | **MISS** |
+| 1. False positive | At most 1 of 10 of my own pieces labeled AI, in all 3 trials | 4 of 10 AI | 4 of 10 AI | 4 of 10 AI | **MISSED** |
+| 2. Score spread | Average AI score at least 0.5 above average human score (5 + 5 texts), in all 3 trials | gap 0.14 (AI 0.719, human 0.580) | gap 0.14 | gap 0.14    v| **MISSED** |
+| 3. Missing or too-short text | Every request under 15 words (or with no text) is told the text is missing or too short | 0 of 6 refused (4 × 500, 2 scored as 200) | 0 of 6 | 0 of 6 | **MISSED** |
+| 4. Label coverage | At most 1 of 5 human and at most 1 of 5 AI texts labeled unsure, in all 3 trials | 3 of 5 human unsure, 0 of 5 AI | 3 human, 0 AI | 3 human, 0 AI | **MISSED** |
 | 5. Appeal path | Every valid appeal logged with its content_id, `event: "appeal"`, `status: "under_review"` | 3 of 3 logged; fake ID refused (404) | 3 of 3; 404 | 3 of 3; 404 | **MET** |
 
 All three trials returned identical scores to four decimals, so these results are
@@ -591,6 +591,91 @@ for each of my ten pieces. Saved in `results/run_2026-11-10_0124_before.md`.
                         signal at 0.6, so it dragged the whole score down."
 
      Look for a pattern. Five failures on one signal is one problem, not five. -->
+
+#### Diagnosis 1 — Human writing scores as AI
+
+**Covers:** criteria 1, 2 and 4 (MISSED), and attacks FP01–FP07 and MF08 (BROKE).
+
+**Stage:** signal two, made worse by the combining rule. Signal one adds to it
+on careful, formal or repetitive writing.
+
+**Mechanism:** signal two gives almost every text a score of about 0.6, whether
+a person or a chatbot wrote it. My ten pieces averaged **0.620** on style and
+the five chatbot texts averaged **0.614**, so my own writing scored slightly
+*more* AI-like than the AI. Breaking the style score into its three parts shows why:
+
+- **Punctuation came out 1.0 (fully AI) on all 15 texts.** My rule says few
+  unusual marks (`; : ! ? ( )`) points to AI, but ordinary prose mostly uses
+  commas and periods. So a quarter of every style score is stuck at "AI".
+- **Vocabulary points the wrong way here.** The chatbot texts used *more*
+  varied words (type-token ratio 0.83–0.92) than mine (0.67–0.86), so this part
+  read the AI as more human than me.
+- **Sentence spread overlaps.** Mine ran 0.31–0.85 and the AI's 0.65–0.76, so
+  it can't tell them apart.
+
+Because the combining rule averages the two signals, a style score stuck near
+0.6 sits right on my AI threshold (0.60). Any text whose model score is above
+about 0.58 gets labeled AI. That accounts for each missed criterion:
+
+- **Criterion 1 (4 of 10 labeled AI):** the four pieces had model scores of
+  0.82, 0.54, 0.74 and 0.76. Even the 0.54 one crossed the line, because its
+  style score was 0.67.
+- **Criterion 2 (gap 0.14, target 0.5):** an average halves every gap. Signal
+  one separated my texts from the AI by 0.25 (0.571 vs 0.825), but signal two
+  separated them by only 0.02. (0.25 + 0.02) ÷ 2 = 0.14. With signal two at
+  roughly zero, reaching 0.5 would need signal one to score every human text 0
+  and every AI text 1. As built, my scoring can't meet this target.
+- **Criterion 4 (3 of 5 human texts unsure):** to reach "human" (below 0.35)
+  when style is about 0.6, the model score would have to be under about 0.1. My
+  lowest was 0.357, so my texts land in unsure at best. Across the whole attack
+  run, only one input (PI02) was ever labeled human.
+
+Signal one adds to the problem for writing that is careful, formal or
+repetitive, because it uses predictable words and GPT-2 finds predictable text
+easy, which it reads as AI. The model scored the non-native speaker (FP03) 0.81,
+the rubric essay (FP04) 0.83, the template (FP06) 0.88, the deliberate
+repetition (FP07) 0.88 and the repeated camping story (MF08) 0.99. Their style
+scores were also 0.60–0.84, so the two signals agreed, the split rule never
+fired, and the average went straight past 0.60.
+
+**Pattern:** this is one problem, not twelve. Signal two can't tell my writing
+from a chatbot's, and averaging lets that flat score pull every text toward
+the AI threshold.
+
+#### Diagnosis 2 — Bad input is never checked
+
+**Covers:** criterion 3 (MISSED), and attacks MF01, MF02 and RQ01–RQ12 (BROKE).
+
+**Stage:** the route (`app.py::submit`).
+
+**Mechanism:** `submit` takes `payload.get("text", "")` and passes it straight
+to the signals. It never checks the type, whether the text is empty, its
+length, or `creator_id`. The only check in the whole service is inside signal
+one: `detector.perplexity` raises `ValueError("Text is too short to score")`
+when the text has fewer than 3 tokens. Nothing catches that error, so:
+
+- **It crashes instead of answering (500).** Missing, empty or one-word text
+  hits that error (MF02, RQ01, and three of criterion 3's six). Text that isn't
+  a string (number, list, null) breaks the tokenizer (RQ03–RQ05). Bodies that
+  aren't a JSON object (array, broken JSON, empty body, form data, plain text,
+  deep nesting) arrive with no usable `text` and fail the same way
+  (RQ07–RQ12).
+- **It lets through what it should refuse (200).** The check counts *tokens*,
+  not words. Whitespace becomes enough tokens to pass, so MF01 was scored 0.353
+  on no text at all. The 14-word text in criterion 3 was scored too. And
+  `creator_id` is never checked: a missing one is logged as `"unknown"` (RQ02),
+  and an object is written into the audit log as-is (RQ06).
+
+So the service does check input, but in the wrong stage. The check fires deep
+inside signal one, where it can only crash, not tell the writer what's wrong,
+and it counts tokens, so whitespace gets past it.
+
+**A note on criterion 3:** looking back, it was too narrow. It only covers
+missing or short text, but most of the bad-input failures were other things:
+wrong types, bodies that aren't JSON, a bad `creator_id`. The criterion could
+still be measured and it missed, so I'm leaving it as written. But passing it
+would only have covered the missing or short cases here (MF01, MF02, RQ01,
+RQ05), not the other ten.
 
 
 
