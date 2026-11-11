@@ -225,6 +225,12 @@ The last entry is the appeal for my submission above, with the new status `under
 - *What came back:* Multiple-choice questions (count sentence length in words or characters, which direction means AI, what a one-sentence text should return, how to weight the three measures), then code with comments that explain each decision. It also tested the code on sample texts and showed me the scores.
 - *What I changed:* I made the actual decisions. My first split rule was to return 0 (confidently human), and I changed it to 0.5 after seeing that it would let anyone game the system by making the signals disagree. For punctuation I didn't pick one of the offered options. I gave my own rule, that few unusual marks *or* lots of em dashes both point to AI, and the code was written to match. I chose 50% weight for sentence spread because it's the best-known difference between AI and human writing.
 
+**Moment 3: finding what broke in the algorithm (unit 8)**
+
+- *What I asked for:* help finding which part of the scoring caused my misses, and what each possible fix would do before I picked one.
+- *What came back:* it split my style score into its three parts and found punctuation scored 1.0 (fully AI) on every text, and then re-ran my recorded scores through each fix (threshold 0.70, reweighting, spread only) to predict the results.
+- *What I changed:* my own punctuation rule from Moment 2 turned out to be the broken part. I chose input validation as my one change because every scoring fix traded one failure for another, and I decided the trade myself: fewer wrong accusations.
+
 <!-- ═══════════════════════ UNIT 8 — THE TEST ═══════════════════════ -->
 
 ---
